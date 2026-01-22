@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - e-Procure</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.6.0/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-base-200 min-h-screen">
+
+    <!-- Navbar -->
+    <!-- Navbar -->
+    <div class="navbar bg-base-100 shadow-md fixed z-50">
+        <div class="navbar-start">
+            <div class="dropdown">
+                <div tabindex="0" role="button" class="btn btn-ghost lg:hidden">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 6h16M4 12h8m-8 6h16" />
+                    </svg>
+                </div>
+                <ul tabindex="0"
+                    class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
+                    <li><a href="/index">Tenders</a></li>
+                    <li><a href="/community">Community</a></li>
+                    <li><a href="/profile" class="active">Profile</a></li>
+                </ul>
+            </div>
+            <a class="btn btn-ghost text-xl normal-case gap-2" href="/index">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                    stroke="currentColor" class="w-6 h-6 text-primary">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                </svg>
+                <span class="font-bold text-gray-700">e-Procure <span class="text-primary">Viz</span></span>
+            </a>
+        </div>
+        <div class="navbar-center hidden lg:flex">
+            <ul class="menu menu-horizontal px-1">
+                <li><a href="/index" class="font-medium hover:text-primary">Tenders</a></li>
+                <li><a href="/community" class="font-medium hover:text-primary">Community Board</a></li>
+            </ul>
+        </div>
+        <div class="navbar-end gap-2">
+            <!-- Notifications / Indicator -->
+            <div class="dropdown dropdown-end">
+                <div tabindex="0" role="button" class="btn btn-ghost btn-circle">
+                    <div class="indicator">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                        </svg>
+                        <span class="indicator-item badge badge-xs badge-primary"></span>
+                    </div>
+                </div>
+                <div tabindex="0" class="mt-3 z-[1] card card-compact dropdown-content w-52 bg-base-100 shadow">
+                    <div class="card-body">
+                        <span class="font-bold text-lg">Notifications</span>
+                        <span class="text-info">No new alerts</span>
+                    </div>
+                </div>
+            </div>
+            <!-- Profile Dropdown -->
+            <div class="dropdown dropdown-end">
+                <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar online">
+                    <div class="w-10 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
+                        <img id="nav-avatar"
+                            src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png" />
+                    </div>
+                </div>
+                <ul tabindex="0"
+                    class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
+                    <li><a href="/profile.html" class="justify-between">Profile <span class="badge">New</span></a></li>
+                    <li><a href="/community">My Posts</a></li>
+                    <li><a onclick="logout()">Logout</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container mx-auto mt-10 px-4">
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+            <!-- User Info Card -->
+            <div class="card bg-base-100 shadow-xl h-fit">
+                <figure class="px-10 pt-10">
+                    <div class="avatar">
+                        <div class="w-24 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
+                            <img id="user-avatar"
+                                src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png" />
+                        </div>
+                    </div>
+                </figure>
+                <div class="card-body items-center text-center">
+                    <h2 class="card-title" id="user-name">Loading...</h2>
+                    <p class="text-sm text-gray-500" id="user-email">...</p>
+                    <div class="card-actions mt-4">
+                        <button class="btn btn-primary btn-sm">Edit Profile</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats / Lists -->
+            <div class="card bg-base-100 shadow-xl md:col-span-2">
+                <div class="card-body">
+                    <!-- API Key Settings -->
+                    <div class="mb-6 collapse collapse-arrow border border-base-300 bg-base-100 rounded-box">
+                        <input type="checkbox" />
+                        <div class="collapse-title text-sm font-medium flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2">
+                                <path
+                                    d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                            </svg>
+                            AI Assistant Settings (Gemini)
+                        </div>
+                        <div class="collapse-content">
+                            <div class="form-control w-full max-w-sm">
+                                <label class="label">
+                                    <span class="label-text">Gemini API Key</span>
+                                </label>
+                                <div class="join">
+                                    <input type="password" id="gemini-key" placeholder="Paste your API key here"
+                                        class="input input-bordered input-sm w-full join-item" />
+                                    <button class="btn btn-sm btn-primary join-item"
+                                        onclick="saveGeminiKey()">Save</button>
+                                </div>
+                                <label class="label">
+                                    <span class="label-text-alt text-gray-400">Key is stored locally in your
+                                        browser.</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h2 class="card-title">My Activity</h2>
+
+                    <div role="tablist" class="tabs tabs-lifted mt-4">
+                        <a role="tab" class="tab tab-active" id="tab-likes" onclick="switchTab('likes')">Liked
+                            Tenders</a>
+                        <a role="tab" class="tab" id="tab-pins" onclick="switchTab('pins')">Saved Tenders</a>
+                        <a role="tab" class="tab" id="tab-comments" onclick="switchTab('comments')">My Comments</a>
+                    </div>
+
+                    <div id="activity-list" class="py-6 space-y-4">
+                        <div class="text-center text-gray-500 italic">Loading...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check Auth
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/auth.html';
+        }
+
+        let currentTab = 'likes';
+        let allTendersCache = null;
+        let myCommentsCache = null;
+
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('tab-active'));
+            document.getElementById(`tab-${tab}`).classList.add('tab-active');
+            renderList();
+        }
+
+        function saveGeminiKey() {
+            const key = document.getElementById('gemini-key').value;
+            if (key) {
+                localStorage.setItem('geminiApiKey', key.trim());
+                alert('Gemini API Key saved successfully!');
+            }
+        }
+
+        // Load User Data
+        async function loadProfile() {
+            // Load Saved Key
+            const savedKey = localStorage.getItem('geminiApiKey');
+            if (savedKey) document.getElementById('gemini-key').value = savedKey;
+
+            try {
+                // Fetch fresh user data
+                const userRes = await fetch('/api/auth/me', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const user = await userRes.json();
+                localStorage.setItem('user', JSON.stringify(user));
+
+                document.getElementById('user-name').innerText = user.name;
+                document.getElementById('user-email').innerText = user.email;
+                if (user.avatar) {
+                    document.getElementById('user-avatar').src = user.avatar;
+                    const navAvatar = document.getElementById('nav-avatar');
+                    if (navAvatar) navAvatar.src = user.avatar;
+                }
+
+                // Load Data
+                const res = await fetch('/api/tenders');
+                allTendersCache = await res.json();
+
+                try {
+                    const comRes = await fetch('/api/tenders/comments/my', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (comRes.ok) {
+                        myCommentsCache = await comRes.json();
+                    } else {
+                        myCommentsCache = [];
+                    }
+                } catch (e) {
+                    myCommentsCache = [];
+                    console.error("Failed to load comments", e);
+                }
+
+                renderList();
+            } catch (e) { console.error(e); }
+        }
+
+        function renderList() {
+            const container = document.getElementById('activity-list');
+            const user = JSON.parse(localStorage.getItem('user'));
+
+            if (currentTab === 'comments') {
+                if (!myCommentsCache || myCommentsCache.length === 0) {
+                    container.innerHTML = `<div class="text-center text-gray-400 italic">No comments yet.</div>`;
+                    return;
+                }
+                container.innerHTML = myCommentsCache.map(c => `
+                    <div class="alert bg-base-100 border border-base-200 shadow-sm flex justify-between items-start">
+                        <div>
+                            <div class="font-bold text-xs text-secondary mb-1">On Tender ${c.tenderId}</div>
+                            <p class="text-sm text-gray-700 italic">"${c.text}"</p>
+                            <div class="text-[10px] text-gray-400 mt-1">${new Date(c.createdAt).toLocaleDateString()}</div>
+                        </div>
+                        <a href="/index.html?id=${c.tenderId}" class="btn btn-sm btn-ghost">View</a>
+                    </div>
+                `).join('');
+                return;
+            }
+
+            let list = [];
+            // Assuming allTendersCache is populated. 
+            if (!allTendersCache) {
+                container.innerHTML = '<div class="loading loading-spinner"></div>';
+                return;
+            }
+
+            if (currentTab === 'likes') {
+                list = allTendersCache.filter(t => t.likes && t.likes.includes(user.id));
+            } else {
+                list = allTendersCache.filter(t => user.pins && user.pins.includes(t.tenderId));
+            }
+
+            if (list.length === 0) {
+                container.innerHTML = `<div class="text-center text-gray-400 italic">No ${currentTab === 'likes' ? 'liked' : 'saved'} tenders yet.</div>`;
+                return;
+            }
+
+            container.innerHTML = list.map(t => `
+                <div class="alert bg-base-100 border border-base-200 shadow-sm flex justify-between items-center">
+                    <div>
+                        <div class="font-bold text-xs text-primary">${t.tenderId || t.reference.match(/^(\d+),/)?.[1] || 'N/A'}</div>
+                        <div class="font-semibold text-sm line-clamp-1">${t.title}</div>
+                    </div>
+                    <a href="/index.html?id=${t.tenderId}" class="btn btn-sm btn-ghost">View</a>
+                </div>
+            `).join('');
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/auth.html';
+        }
+
+        loadProfile();
+    </script>
+</body>
+
+</html>

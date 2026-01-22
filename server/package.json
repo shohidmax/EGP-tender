@@ -1,0 +1,24 @@
+{
+  "name": "eprocure-scraper",
+  "version": "1.0.0",
+  "description": "Scraper for e-procure tenders",
+  "main": "server.js",
+  "scripts": {
+    "start": "nodemon server.js",
+    "scrape:manual": "node scrapeTenders.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.1.5",
+    "node-cron": "^4.2.1",
+    "puppeteer": "^24.1.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.11"
+  }
+}

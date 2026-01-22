@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login / Signup - e-Procure</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.6.0/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-base-200 min-h-screen flex items-center justify-center p-4">
+
+    <div class="card w-full max-w-sm shadow-2xl bg-base-100">
+        <div class="card-body">
+            <h2 class="card-title justify-center mb-4 text-2xl font-bold text-primary">Join e-Procure</h2>
+
+            <div role="tablist" class="tabs tabs-boxed mb-6">
+                <a role="tab" class="tab tab-active" id="tab-login" onclick="switchTab('login')">Login</a>
+                <a role="tab" class="tab" id="tab-signup" onclick="switchTab('signup')">Sign Up</a>
+            </div>
+
+            <!-- Login Form -->
+            <form id="login-form">
+                <div class="form-control">
+                    <label class="label"><span class="label-text">Email</span></label>
+                    <input type="email" id="l-email" placeholder="email@example.com" class="input input-bordered"
+                        required />
+                </div>
+                <div class="form-control">
+                    <label class="label"><span class="label-text">Password</span></label>
+                    <input type="password" id="l-password" placeholder="********" class="input input-bordered"
+                        required />
+                </div>
+                <div class="form-control mt-6">
+                    <button type="submit" class="btn btn-primary">Login</button>
+                </div>
+            </form>
+
+            <!-- Signup Form -->
+            <form id="signup-form" class="hidden">
+                <div class="form-control">
+                    <label class="label"><span class="label-text">Full Name</span></label>
+                    <input type="text" id="s-name" placeholder="John Doe" class="input input-bordered" required />
+                </div>
+                <div class="form-control">
+                    <label class="label"><span class="label-text">Email</span></label>
+                    <input type="email" id="s-email" placeholder="email@example.com" class="input input-bordered"
+                        required />
+                </div>
+                <div class="form-control">
+                    <label class="label"><span class="label-text">Password</span></label>
+                    <input type="password" id="s-password" placeholder="********" class="input input-bordered"
+                        required />
+                </div>
+                <div class="form-control mt-6">
+                    <button type="submit" class="btn btn-secondary">Create Account</button>
+                </div>
+            </form>
+
+            <div id="error-msg" class="text-error text-center mt-4 text-sm"></div>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(tab) {
+            const loginForm = document.getElementById('login-form');
+            const signupForm = document.getElementById('signup-form');
+            const loginTab = document.getElementById('tab-login');
+            const signupTab = document.getElementById('tab-signup');
+            const errorMsg = document.getElementById('error-msg');
+
+            errorMsg.innerText = '';
+
+            if (tab === 'login') {
+                loginForm.classList.remove('hidden');
+                signupForm.classList.add('hidden');
+                loginTab.classList.add('tab-active');
+                signupTab.classList.remove('tab-active');
+            } else {
+                loginForm.classList.add('hidden');
+                signupForm.classList.remove('hidden');
+                loginTab.classList.remove('tab-active');
+                signupTab.classList.add('tab-active');
+            }
+        }
+
+        // Handle Login
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('l-email').value;
+            const password = document.getElementById('l-password').value;
+            const errorMsg = document.getElementById('error-msg');
+
+            try {
+                const res = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    window.location.href = '/index.html';
+                } else {
+                    errorMsg.innerText = data.error || 'Login failed';
+                }
+            } catch (err) {
+                errorMsg.innerText = 'Network error';
+            }
+        });
+
+        // Handle Signup
+        document.getElementById('signup-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('s-name').value;
+            const email = document.getElementById('s-email').value;
+            const password = document.getElementById('s-password').value;
+            const errorMsg = document.getElementById('error-msg');
+
+            try {
+                const res = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password })
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    window.location.href = '/index.html';
+                } else {
+                    errorMsg.innerText = data.error || 'Signup failed';
+                }
+            } catch (err) {
+                errorMsg.innerText = 'Network error';
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>e-Procure Dashboard</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@3.9.4/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#0ca3eb',
+                        secondary: '#4b5563',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-base-200 min-h-screen font-sans">
+
+    <!-- Navbar -->
+    <div class="navbar bg-base-100 shadow-md fixed px-4 md:px-8 z-50">
+        <div class="navbar-start">
+            <div class="dropdown">
+                <div tabindex="0" role="button" class="btn btn-ghost lg:hidden">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 6h16M4 12h8m-8 6h16" />
+                    </svg>
+                </div>
+                <ul tabindex="0"
+                    class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
+                    <li><a href="/index" class="active">Tenders</a></li>
+                    <li><a href="/community">Community</a></li>
+                    <li><a href="/profile">Profile</a></li>
+                </ul>
+            </div>
+            <a class="btn btn-ghost text-xl normal-case gap-2" href="/index">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                    stroke="currentColor" class="w-6 h-6 text-primary">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                </svg>
+                <span class="font-bold text-gray-700">e-Procure <span class="text-primary">Viz</span></span>
+            </a>
+        </div>
+        <div class="navbar-center hidden lg:flex">
+            <ul class="menu menu-horizontal px-1">
+                <li><a href="/index" class="font-semibold text-primary">Tenders</a></li>
+                <li><a href="/community" class="font-medium hover:text-primary">Community Board</a></li>
+            </ul>
+        </div>
+        <div class="navbar-end gap-2">
+            <!-- Search/Stats (Hidden on mobile) -->
+            <div class="stats bg-transparent shadow-none hidden sm:inline-grid mr-2 scale-90">
+                <div class="stat py-0 border-none p-0">
+                    <div class="stat-value text-sm text-primary" id="total-count-nav">0</div>
+                    <div class="stat-desc text-[10px]">Records</div>
+                </div>
+            </div>
+
+            <!-- Notifications -->
+            <div class="dropdown dropdown-end">
+                <div tabindex="0" role="button" class="btn btn-ghost btn-circle">
+                    <div class="indicator">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                        </svg>
+                        <span id="notif-badge" class="indicator-item badge badge-xs badge-error hidden"></span>
+                    </div>
+                </div>
+                <div tabindex="0"
+                    class="mt-3 z-[1] card card-compact dropdown-content w-80 bg-base-100 shadow-xl border border-base-200 backdrop-blur-md bg-opacity-90">
+                    <div class="card-body p-0">
+                        <div class="flex justify-between items-center p-3 border-b border-base-200">
+                            <h3 class="font-bold text-md">Notifications</h3>
+                            <button onclick="markAllRead()" class="btn btn-xs btn-ghost text-primary">Mark all
+                                read</button>
+                        </div>
+                        <ul id="notif-list" class="menu menu-xs p-1 max-h-60 overflow-y-auto">
+                            <!-- Dynamic List -->
+                            <li class="disabled"><a class="text-gray-400">Loading...</a></li>
+                        </ul>
+                        <div class="p-2 border-t border-base-200 text-center">
+                            <a href="#" class="text-xs hover:text-primary">View all</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Dropdown -->
+            <div class="dropdown dropdown-end">
+                <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar online">
+                    <div class="w-10 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
+                        <img id="nav-avatar"
+                            src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png" />
+                    </div>
+                </div>
+                <ul tabindex="0"
+                    class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
+                    <li>
+                        <a href="/profile" class="justify-between">
+                            Profile
+                            <span class="badge">New</span>
+                        </a>
+                    </li>
+                    <li><a href="/community">My Posts</a></li>
+                    <li><a onclick="localStorage.removeItem('token'); window.location.href='/auth'">Logout</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container mx-auto pt-24 pb-12 px-4 max-w-7xl">
+
+        <!-- Filter Card -->
+        <div class="card bg-base-100 shadow-xl mb-6">
+            <div class="card-body p-4 sm:p-6">
+                <!-- Top Row: Search & Toggles -->
+                <div class="flex flex-col md:flex-row justify-between items-end gap-4">
+                    <div class="form-control w-full md:w-1/3">
+                        <label class="label">
+                            <span class="label-text font-semibold">Search Tenders</span>
+                        </label>
+                        <div class="relative">
+                            <input type="text" id="search" placeholder="Ref No, Title, ID..."
+                                class="input input-bordered w-full pr-10" />
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-gray-400" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Category Filters -->
+                    <div class="join w-full md:w-auto">
+                        <input class="join-item btn btn-sm px-6" type="radio" name="options" aria-label="All" checked
+                            onclick="filterType('All')" />
+                        <input class="join-item btn btn-sm px-6" type="radio" name="options" aria-label="Works"
+                            onclick="filterType('Works')" />
+                        <input class="join-item btn btn-sm px-6" type="radio" name="options" aria-label="Goods"
+                            onclick="filterType('Goods')" />
+                        <input class="join-item btn btn-sm px-6" type="radio" name="options" aria-label="Services"
+                            onclick="filterType('Services')" />
+                    </div>
+                </div>
+
+                <!-- Bottom Row: Dynamic Filters -->
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mt-4 items-end">
+
+                    <!-- Ministry (Span 3) -->
+                    <div class="form-control md:col-span-3">
+                        <label class="label py-1"><span class="label-text text-xs font-medium text-gray-500">Ministry /
+                                Division</span></label>
+                        <select id="filter-ministry" class="select select-bordered select-sm w-full bg-base-50"
+                            onchange="applyFilters()">
+                            <option value="">All Ministries</option>
+                            <!-- Dynamically populated -->
+                        </select>
+                    </div>
+
+                    <!-- District (Span 3) -->
+                    <div class="form-control md:col-span-3">
+                        <label class="label py-1"><span
+                                class="label-text text-xs font-medium text-gray-500">District</span></label>
+                        <select id="filter-district" class="select select-bordered select-sm w-full bg-base-50"
+                            onchange="applyFilters()">
+                            <option value="">All Districts</option>
+                            <!-- Dynamically populated -->
+                        </select>
+                    </div>
+
+                    <!-- Method (Span 2) -->
+                    <div class="form-control md:col-span-2">
+                        <label class="label py-1"><span
+                                class="label-text text-xs font-medium text-gray-500">Method</span></label>
+                        <select id="filter-method" class="select select-bordered select-sm w-full bg-base-50"
+                            onchange="applyFilters()">
+                            <option value="">All</option>
+                            <!-- Dynamically populated -->
+                        </select>
+                    </div>
+
+                    <!-- Date Range (Span 4) -->
+                    <div class="form-control md:col-span-4">
+                        <label class="label py-1"><span class="label-text text-xs font-medium text-gray-500">Closing
+                                Date (Start - End)</span></label>
+                        <div class="join w-full grid grid-cols-2">
+                            <input type="date" id="filter-date-from"
+                                class="join-item input input-sm input-bordered w-full text-xs px-1"
+                                onchange="applyFilters()" />
+                            <input type="date" id="filter-date-to"
+                                class="join-item input input-sm input-bordered w-full text-xs px-1"
+                                onchange="applyFilters()" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center mt-3 border-t border-base-200 pt-2">
+                    <span class="text-xs text-gray-400" id="filter-status">Active Filters: None</span>
+                    <button class="btn btn-xs btn-ghost text-error hover:bg-error/10" onclick="clearFilters()">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                        Clear Filters
+                    </button>
+
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Table Card -->
+    <div class="card bg-base-100 shadow-xl overflow-hidden min-h-[500px]">
+        <div class="p-0 overflow-x-auto">
+            <table class="table table-zebra table-pin-rows w-full">
+                <!-- head -->
+                <thead>
+                    <tr class="bg-base-200">
+                        <th>ID / Ref</th>
+                        <th>Description</th>
+                        <th class="hidden md:table-cell">Ministry / Entity</th>
+                        <th class="hidden sm:table-cell">Closing Date</th>
+                        <th class="text-center">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="tender-table-body">
+                    <!-- Loaded dynamically -->
+                    <tr>
+                        <td colspan="5" class="text-center py-10">
+                            <span class="loading loading-spinner loading-lg text-primary"></span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="flex flex-col sm:flex-row justify-between items-center p-4 border-t border-base-200 gap-4">
+            <div class="text-sm text-gray-500" id="pagination-info">Showing 0 to 0 of 0</div>
+            <div class="join">
+                <button class="join-item btn btn-sm" id="prev-btn">«</button>
+                <button class="join-item btn btn-sm no-animation bg-base-100 cursor-default">Page <span
+                        id="current-page-num">1</span></button>
+                <button class="join-item btn btn-sm" id="next-btn">»</button>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <!-- Detail Modal -->
+    <dialog id="detail_modal" class="modal modal-bottom sm:modal-middle">
+        <div class="modal-box w-11/12 max-w-4xl p-0 overflow-hidden flex flex-col max-h-[90vh]">
+
+            <!-- Sticky Header -->
+            <div class="bg-primary text-primary-content p-4 sticky top-0 z-10 flex justify-between items-center">
+                <h3 class="font-bold text-lg" id="modal-title">Tender Details</h3>
+                <form method="dialog">
+                    <button class="btn btn-sm btn-circle btn-ghost text-white">✕</button>
+                </form>
+            </div>
+
+            <!-- Scrollable Content -->
+            <div class="p-6 overflow-y-auto" id="modal-content">
+                <!-- Injected via JS -->
+            </div>
+
+            <div class="modal-action p-4 bg-base-100 border-t m-0">
+                <form method="dialog">
+                    <button class="btn">Close</button>
+                </form>
+            </div>
+        </div>
+        <form method="dialog" class="modal-backdrop">
+            <button>close</button>
+        </form>
+    </dialog>
+
+    <script>
+        let allTenders = [];
+        let filteredTenders = [];
+        let currentPage = 1;
+        const itemsPerPage = 50;
+        let currentFilterType = 'All';
+
+        let currentUser = null;
+        try {
+            currentUser = JSON.parse(localStorage.getItem('user'));
+            if (currentUser && currentUser.avatar) {
+                document.getElementById('nav-avatar').src = currentUser.avatar;
+
+                // Initialize Notifications
+                updateNotifications();
+                // Poll every 60s
+                setInterval(updateNotifications, 60000);
+            }
+        } catch (e) { }
+
+        // --- Notification Logic ---
+        async function updateNotifications() {
+            if (!localStorage.getItem('token')) return;
+            try {
+                const res = await fetch('/api/notifications', {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    renderNotifications(data.notifications, data.unreadCount);
+                }
+            } catch (e) { console.error('Notif fetch failed', e); }
+        }
+
+        function renderNotifications(list, count) {
+            const badge = document.getElementById('notif-badge');
+            const ul = document.getElementById('notif-list');
+
+            // Badge
+            if (count > 0) {
+                badge.innerText = count > 99 ? '99+' : count;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+
+            // List
+            if (list.length === 0) {
+                ul.innerHTML = `<li class="disabled"><a class="text-gray-400 text-xs">No notifications</a></li>`;
+                return;
+            }
+
+            ul.innerHTML = list.map(n => `
+                <li class="${n.isRead ? 'opacity-60' : 'bg-base-200'} border-b border-base-200 last:border-none">
+                    <a class="flex flex-col gap-0 items-start py-2" onclick="handleNotificationClick('${n._id}', '${n.relatedId}')">
+                        <div class="flex justify-between w-full">
+                            <span class="font-bold text-xs ${n.type === 'NEW_TENDER' ? 'text-primary' : 'text-secondary'}">${n.title}</span>
+                            <span class="text-[10px] text-gray-400">${timeAgo(n.createdAt)}</span>
+                        </div>
+                        <span class="text-xs truncate w-full">${n.message}</span>
+                    </a>
+                </li>
+            `).join('');
+        }
+
+        async function handleNotificationClick(notifId, relatedId) {
+            // Mark read
+            try {
+                await fetch(`/api/notifications/${notifId}/read`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+                updateNotifications(); // Refresh UI
+            } catch (e) { }
+
+            // Open Modal (Similar to finding tender and opening)
+            // But we might need to fetch it if not in current page list?
+            // For now, try finding in allTenders
+            if (relatedId) {
+                // If we have it in memory
+                const tender = allTenders.find(t => t.tenderId === relatedId);
+                if (tender) {
+                    openModal(tender);
+                } else {
+                    // Ideally fetch single tender from API, but for now just redirect or alert
+                    window.location.href = `/index?id=${relatedId}`; // Deep link handles it
+                }
+            }
+        }
+
+        async function markAllRead() {
+            try {
+                await fetch(`/api/notifications/read-all`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+                updateNotifications();
+            } catch (e) { }
+        }
+
+        function timeAgo(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const seconds = Math.floor((now - date) / 1000);
+            if (seconds < 60) return 'Just now';
+            const minutes = Math.floor(seconds / 60);
+            if (minutes < 60) return `${minutes}m ago`;
+            const hours = Math.floor(minutes / 60);
+            if (hours < 24) return `${hours}h ago`;
+            return `${Math.floor(hours / 24)}d ago`;
+        }
+
+        // Load Data
+        fetch('/api/tenders')
+            .then(res => res.json())
+            .then(data => {
+                allTenders = data;
+                filteredTenders = data;
+                document.getElementById('total-count-nav').innerText = data.length.toLocaleString();
+                populateFilters(data);
+                renderTable();
+            })
+            .catch(err => {
+                document.getElementById('tender-table-body').innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center py-8 text-error font-semibold">
+                            Failed to load data. Is the server running?
+                        </td>
+                    </tr>`;
+            });
+
+        function populateFilters(data) {
+            const ministries = new Set();
+            const districts = new Set();
+            const methods = new Set();
+
+            data.forEach(t => {
+                const m = t.dtl_ministry || t.ministry;
+                if (m) ministries.add(m.trim());
+
+                const d = t.dtl_district || t.detailed_district;
+                if (d) districts.add(d.trim());
+
+                const meth = t.typeMethod || (t.detailed_procurementMethod ? t.detailed_procurementMethod.split(' ')[0] : null);
+                if (meth) methods.add(meth.trim());
+            });
+
+            const minSelect = document.getElementById('filter-ministry');
+            [...ministries].sort().forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m;
+                opt.innerText = m;
+                minSelect.appendChild(opt);
+            });
+
+            const distSelect = document.getElementById('filter-district');
+            [...districts].sort().forEach(d => {
+                const opt = document.createElement('option');
+                opt.value = d;
+                opt.innerText = d;
+                distSelect.appendChild(opt);
+            });
+
+            const methodSelect = document.getElementById('filter-method');
+            [...methods].sort().forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m;
+                opt.innerText = m;
+                methodSelect.appendChild(opt);
+            });
+        }
+
+        async function togglePin(id, btn, isModal = false) {
+            if (!currentUser) return window.location.href = '/auth';
+
+            // Optimistic UI Update
+            if (!currentUser.pins) currentUser.pins = [];
+            const index = currentUser.pins.indexOf(id);
+            const isPinned = index !== -1;
+
+            if (isPinned) currentUser.pins.splice(index, 1);
+            else currentUser.pins.push(id);
+
+            localStorage.setItem('user', JSON.stringify(currentUser));
+
+            // Sync UI
+            updateButtons(id, !isPinned, 'pin');
+
+            // Re-sort and render
+            applyFilters();
+
+            // API Sync
+            try {
+                await fetch(`/api/user/pin/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+            } catch (e) { console.error(e); }
+        }
+
+        async function toggleLike(id, btn, isModal = false) {
+            if (!currentUser) return window.location.href = '/auth';
+
+            // Optimistic
+            // For likes, we can't easily update local user object for *tender* likes count, 
+            // but we can update "my likes" if we tracked them. 
+            // The `currentUser` object might logic needs checking. 
+            // `t.likes` is on the tender. `currentUser.favorites`? 
+            // Let's assume standard API call is needed for likes to reflect on server, 
+            // but we can animate the button.
+
+            // Actually, `renderTable` checks `t.likes.includes(currentUser.id)`.
+            // So we need to update the LOCAL tender data `allTenders` to reflect the like immediately.
+            const tender = allTenders.find(t => (t.tenderId === id || t.reference.startsWith(id)));
+            if (tender) {
+                if (!tender.likes) tender.likes = [];
+                const idx = tender.likes.indexOf(currentUser.id);
+                if (idx !== -1) tender.likes.splice(idx, 1);
+                else tender.likes.push(currentUser.id);
+
+                // Update UI
+                updateButtons(id, idx === -1, 'like');
+            }
+
+            try {
+                await fetch(`/api/tenders/${id}/like`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+            } catch (e) { console.error(e); }
+        }
+
+        function updateButtons(id, isActive, type) {
+            // Helper to update both table and modal buttons
+            const btnTable = document.getElementById(`btn-${type}-${id}`);
+            const btnModal = document.querySelector(`.sticky button[onclick*="${type}('${id}'"]`); // simplistic
+
+            const activeClass = type === 'pin' ? 'btn-warning text-white' : 'btn-error text-white';
+            const inactiveClass = 'btn-ghost text-gray-400';
+
+            // We rely on renderTable re-running for the list, so mainly need to check Modal if open
+            // But since togglePin calls applyFilters -> renderTable, the list is auto updated.
+            // So we just need to handle the button state if we didn't re-render?
+            // Actually re-render covers the list.
+        }
+
+        function filterType(type) {
+            currentFilterType = type;
+            applyFilters();
+        }
+
+        function clearFilters() {
+            document.getElementById('search').value = '';
+            document.getElementById('filter-ministry').value = '';
+            document.getElementById('filter-district').value = '';
+            document.getElementById('filter-method').value = '';
+            document.getElementById('filter-date-from').value = '';
+            document.getElementById('filter-date-to').value = '';
+
+            // Reset radio to All
+            const radios = document.getElementsByName('options');
+            for (const r of radios) {
+                if (r.ariaLabel === 'All') r.checked = true;
+                else r.checked = false;
+            }
+            currentFilterType = 'All';
+
+            applyFilters();
+        }
+
+        function applyFilters() {
+            const query = document.getElementById('search').value.toLowerCase();
+            const ministry = document.getElementById('filter-ministry').value;
+            const district = document.getElementById('filter-district').value;
+            const method = document.getElementById('filter-method').value;
+            const dateFrom = document.getElementById('filter-date-from').value ? new Date(document.getElementById('filter-date-from').value) : null;
+            const dateTo = document.getElementById('filter-date-to').value ? new Date(document.getElementById('filter-date-to').value) : null;
+
+            filteredTenders = allTenders.filter(t => {
+                // 1. Search Query
+                const matchesSearch =
+                    t.reference.toLowerCase().includes(query) ||
+                    t.title.toLowerCase().includes(query) ||
+                    (t.ministry && t.ministry.toLowerCase().includes(query)) ||
+                    (t.dtl_procuring_entity_name && t.dtl_procuring_entity_name.toLowerCase().includes(query));
+
+                // 2. Type Filter
+                const matchesType = currentFilterType === 'All' ||
+                    (t.detailed_procurementNature && t.detailed_procurementNature.includes(currentFilterType)) ||
+                    (t.title && t.title.includes(currentFilterType));
+
+                // 3. Ministry Filter
+                const matchesMinistry = !ministry || (t.dtl_ministry === ministry || t.ministry === ministry);
+
+                // 4. District Filter
+                const matchesDistrict = !district || (t.dtl_district === district || t.detailed_district === district);
+
+                // 5. Method Filter
+                const tMethod = t.typeMethod || (t.detailed_procurementMethod ? t.detailed_procurementMethod.split(' ')[0] : '');
+                const matchesMethod = !method || (tMethod && tMethod.includes(method));
+
+                // 6. Date Range Filter (Closing Date)
+                let matchesDate = true;
+                if (dateFrom || dateTo) {
+                    // Extract Closing Date. Format often "Publication: ..., Closing: ..." or dtl field
+                    let dateStr = t.detailed_closingDate || (t.dates ? t.dates.split(',')[1] : null);
+                    if (dateStr) {
+                        // Attempt parse "15-Feb-2026 14:00"
+                        // Remove "Closing Date:" label if present
+                        dateStr = dateStr.replace('Closing Date:', '').trim();
+                        const d = new Date(dateStr);
+                        if (!isNaN(d)) {
+                            if (dateFrom) matchesDate = matchesDate && (d >= dateFrom);
+                            if (dateTo) {
+                                // Set dateTo to end of day? No, explicit date.
+                                // d <= dateTo. Add 1 day to dateTo to include the full day?
+                                // date inputs are YYYY-MM-DD. d has time.
+                                // Let's strip time for comparison
+                                const donly = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+                                const toOnly = new Date(dateTo.getFullYear(), dateTo.getMonth(), dateTo.getDate());
+                                matchesDate = matchesDate && (donly <= toOnly);
+                            }
+                        }
+                    }
+                }
+
+                return matchesSearch && matchesType && matchesMinistry && matchesDistrict && matchesMethod && matchesDate;
+            });
+
+            currentPage = 1;
+            renderTable();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('tender-table-body');
+            tbody.innerHTML = '';
+
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            const pageData = filteredTenders.slice(start, end);
+
+            // Update Pagination UI
+            document.getElementById('pagination-info').innerText = `Showing ${filteredTenders.length > 0 ? start + 1 : 0} to ${Math.min(end, filteredTenders.length)} of ${filteredTenders.length.toLocaleString()}`;
+            document.getElementById('current-page-num').innerText = currentPage;
+
+            if (pageData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-gray-500">No matching records found.</td></tr>`;
+                return;
+            }
+
+            pageData.forEach(t => {
+                // Formatting
+                const id = t.tenderId || (t.reference.match(/^(\d+)/) ? t.reference.match(/^(\d+)/)[1] : 'N/A');
+                const refText = t.reference.replace(id + ',', '').trim() || t.reference;
+
+                const date = t.detailed_closingDate || t.dates.split(',')[1] || 'N/A';
+
+                const isLiked = currentUser && t.likes && t.likes.includes(currentUser.id);
+                const isPinned = currentUser && currentUser.pins && currentUser.pins.includes(id);
+
+                const row = document.createElement('tr');
+                row.className = 'hover cursor-pointer group';
+                row.onclick = () => openModal(t);
+                row.innerHTML = `
+                    <td>
+                        <div class="font-bold text-primary">${id}</div>
+                        <div class="text-xs text-gray-500 truncate max-w-[150px]" title="${refText}">${refText}</div>
+                    </td>
+                    <td>
+                        <div class="font-semibold text-sm line-clamp-2" title="${t.title}">${t.title}</div>
+                        <div class="badge badge-xs text-xs font-normal mt-1 ${t.detailed_procurementNature === 'Works' ? 'badge-info' : 'badge-ghost'}">
+                            ${t.detailed_procurementNature || 'Unknown'}
+                        </div>
+                    </td>
+                    <td class="hidden md:table-cell text-sm">
+                        <div class="font-bold text-gray-700">${(t.dtl_ministry || t.ministry || '').split(',')[0]}</div>
+                        <div class="text-xs text-gray-500">${t.dtl_procuring_entity_name || t.detailed_procuringEntity || t.detailed_district || ''}</div>
+                    </td>
+                    <td class="hidden sm:table-cell text-sm font-mono text-gray-600">
+                        ${date}
+                    </td>
+                    <td class="text-center flex items-center justify-center gap-2">
+                         <!-- LIKE BUTTON -->
+                        <button class="btn btn-square btn-sm ${isLiked ? 'btn-error text-white' : 'btn-ghost text-gray-400'}" 
+                                id="btn-like-${id}"
+                                onclick="event.stopPropagation(); toggleLike('${id}', this)" title="Like">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                        
+                        <!-- PIN BUTTON -->
+                        <button class="btn btn-square btn-sm ${isPinned ? 'btn-warning text-white' : 'btn-ghost text-gray-400'}" 
+                                id="btn-pin-${id}"
+                                onclick="event.stopPropagation(); togglePin('${id}', this)" title="Save/Bookmark">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z" />
+                            </svg>
+                        </button>
+
+                        <!-- VIEW BUTTON -->
+                        <button class="btn btn-square btn-ghost btn-sm group-hover:text-primary transition-all">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                              <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                              <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Search Interface
+        document.getElementById('search').addEventListener('input', applyFilters);
+
+        // Pagination Buttons
+        document.getElementById('prev-btn').addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                renderTable();
+            }
+        });
+        document.getElementById('next-btn').addEventListener('click', () => {
+            if ((currentPage * itemsPerPage) < filteredTenders.length) {
+                currentPage++;
+                renderTable();
+            }
+        });
+
+        // Detail Modal
+        function openModal(t) {
+            const modal = document.getElementById('detail_modal');
+            const container = document.getElementById('modal-content');
+
+            // Setup Header with Title and Actions
+            const id = t.tenderId || (t.reference.match(/^(\d+)/) ? t.reference.match(/^(\d+)/)[1] : 'N/A');
+            const isLiked = currentUser && t.likes && t.likes.includes(currentUser.id);
+            const isPinned = currentUser && currentUser.pins && currentUser.pins.includes(id);
+
+            const header = document.querySelector('.sticky');
+            header.innerHTML = `
+                <div class="flex items-center gap-2">
+                     <h3 class="font-bold text-lg line-clamp-1">Tender #${id}</h3>
+                     <div class="join">
+                        <button class="btn btn-sm join-item btn-primary text-white" 
+                                onclick="downloadTenderPDF()" title="Download PDF">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                            <span class="hidden sm:inline text-xs ml-1">PDF</span>
+                        </button>
+                        <button class="btn btn-sm join-item ${isLiked ? 'btn-error text-white' : 'btn-ghost text-white/50'}"
+                             onclick="toggleLike('${id}', this, true)" title="Like">
+                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                        <button class="btn btn-sm join-item ${isPinned ? 'btn-warning text-white' : 'btn-ghost text-white/50'}"
+                             onclick="togglePin('${id}', this, true)" title="Save">
+                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z" />
+                            </svg>
+                        </button>
+                     </div>
+                </div>
+                <form method="dialog">
+                    <button class="btn btn-sm btn-circle btn-ghost text-white">✕</button>
+                </form>
+            `;
+
+            // Generate HTML Content
+            // NEW DESIGN: Unified Card
+            let html = `
+                    <div class="card bg-base-100 shadow-sm border border-base-200 mb-6">
+                        <div class="card-body p-5">
+                            <h4 class="text-xs font-bold uppercase track-widest opacity-60 mb-3 border-b pb-2">Tender Overview</h4>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                                <!-- Col 1: Core Identity -->
+                                <div class="space-y-3">
+                                    <div>
+                                        <div class="text-xs text-gray-400">Ministry</div>
+                                        <div class="font-medium text-sm text-gray-800">${t.dtl_ministry || t.ministry}</div>
+                                    </div>
+                                    <div>
+                                        <div class="text-xs text-gray-400">Procuring Entity</div>
+                                        <div class="font-medium text-sm text-gray-800">${t.dtl_procuring_entity_name || t.detailed_procuringEntity || 'N/A'}</div>
+                                    </div>
+                                    <div>
+                                        <div class="text-xs text-gray-400">District</div>
+                                        <div class="font-medium text-sm text-gray-800">${t.dtl_district || t.detailed_district || 'N/A'}</div>
+                                    </div>
+                                </div>
+
+                                <!-- Col 2: Dates & Value -->
+                                <div class="space-y-3">
+                                     <div>
+                                        <div class="text-xs text-gray-400">Budget Type</div>
+                                        <span class="badge badge-accent badge-sm font-bold text-white mt-1">${t.dtl_budget_type || t.detailed_budgetType || 'N/A'}</span>
+                                    </div>
+                                    <div>
+                                        <div class="text-xs text-gray-400">Closing Date</div>
+                                        <div class="font-bold text-sm text-error">${t.dtl_tender_proposal_closing_date_and_time || t.detailed_closingDate || 'N/A'}</div>
+                                    </div>
+                                    <div>
+                                        <div class="text-xs text-gray-400">Opening Date</div>
+                                        <div class="font-medium text-sm text-gray-800">${t.dtl_tender_proposal_opening_date_and_time || t.detailed_openingDate || 'N/A'}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                <div class="divider text-xs text-gray-400">FULL SPECIFICATION</div>
+                
+                <div class="overflow-x-auto">
+                    <table class="table table-xs w-full">
+                        <tbody>
+            `;
+
+            // Sort keys alphabetically for better UX? Or just list them.
+            // Let's hide the big raw chunks like 'ministry' or 'title' if we have 'dtl_'
+
+            const keys = Object.keys(t).sort();
+
+            keys.forEach(key => {
+                if (key === 'detailed_full_scraping_complete') return;
+
+                // Format key
+                let label = key.replace(/^dtl_/, '').replace(/^detailed_/, '').replace(/_/g, ' ');
+                // Capitalize
+                label = label.replace(/\b\w/g, c => c.toUpperCase());
+
+                const val = t[key];
+                if (!val) return;
+
+                html += `
+                    <tr class="hover:bg-base-200">
+                        <td class="font-semibold text-gray-500 w-1/3 align-top">${label}</td>
+                        <td class="text-gray-800 break-words whitespace-pre-wrap">${val}</td>
+                    </tr>
+                `;
+            });
+
+            html += `</tbody></table></div>`;
+
+            // Footer warning if scraping was incomplete
+            if (!t.detailed_full_scraping_complete && !t.dtl_ministry) {
+                html += `< div class="alert alert-warning mt-4 text-xs shadow-none" >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                    <span>Full detail scraping for this item might be pending. Scraper is running...</span>
+                </div > `;
+            }
+
+            // AI CHAT SECTION
+            html += `
+                <div class="divider my-6 text-primary">AI Assistant</div>
+                <div class="bg-base-200 p-4 rounded-lg mb-6 border border-primary/20">
+                    <div class="flex justify-between items-center mb-4">
+                        <h4 class="font-bold text-sm flex items-center gap-2">
+                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm1 14.93V17a1 1 0 11-2 0v-2.07c-1.92-.12-3.46-1.63-3.46-3.56a1 1 0 012 0c0 .9.81 1.63 1.46 1.63.65 0 1.46-.73 1.46-1.63 0-1.93-1.54-3.44-3.46-3.56V5a1 1 0 112 0v2.07c1.92.12 3.46 1.63 3.46 3.56a1 1 0 01-2 0c0-.9-.81-1.63-1.46-1.63-.65 0-1.46.73-1.46 1.63 0 1.93 1.54 3.44 3.46 3.56z"/></svg> 
+                            Discuss with Gemini
+                        </h4>
+                        <button class="btn btn-xs btn-ghost text-error" onclick="clearGeminiChat()">Clear Chat</button>
+                    </div>
+
+                    <div id="gemini-chat-box" class="bg-base-100 rounded-md p-3 h-48 overflow-y-auto mb-3 text-sm space-y-3 border border-base-300">
+                        <div class="chat chat-start">
+                            <div class="chat-bubble chat-bubble-primary text-xs">Hi! Ask me anything about this tender.</div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-2">
+                        <input type="text" id="gemini-input" placeholder="Ask a question (e.g., 'Summarize key requirements')..." class="input input-bordered input-sm w-full" onkeypress="handleGeminiEnter(event)">
+                        <button class="btn btn-sm btn-primary" onclick="sendMessageToGemini()">Send</button>
+                    </div>
+                </div>
+            `;
+
+            // COMMENTS SECTION
+            html += `
+                    <div class="divider my-6">Discussion</div>
+                        <div class="bg-base-200 p-4 rounded-lg">
+                            <h4 class="font-bold text-sm mb-4">Comments</h4>
+                            
+                            <div id="comments-list" class="space-y-4 mb-4 max-h-60 overflow-y-auto">
+                                <div class="text-center text-xs text-gray-500 py-4">Loading comments...</div>
+                            </div>
+                    
+                    <div class="modal-action justify-between">
+                         <button id="share-btn" class="btn btn-sm btn-outline gap-2" onclick="shareTender('${t.tenderId || t.reference.split(',')[0]}')">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
+                            Share This Tender
+                        </button>
+                        <form method="dialog">
+                            <button class="btn btn-sm">Close</button>
+                        </form>
+                    </div>
+                `;
+
+            container.innerHTML = html;
+            modal.showModal();
+            loadComments(t.tenderId || t.reference.match(/^(\d+)/)[1]);
+
+            // FRESH DATA FETCH
+            // We fetch the latest version of this tender to see if details were just scraped
+            if (!t.detailed_full_scraping_complete) {
+                const tenderId = t.tenderId || t.reference.match(/^(\d+)/)[1];
+                fetch(`/api/tenders/${tenderId}`)
+                    .then(res => res.json())
+                    .then(freshTender => {
+                        if (freshTender && freshTender.detailed_full_scraping_complete) {
+                            const idx = allTenders.findIndex(x => x.tenderId === tenderId);
+                            if (idx !== -1) allTenders[idx] = freshTender;
+                            openModal(freshTender);
+                        }
+                    })
+                    .catch(console.error);
+            }
+
+            // Store current tender for Gemini context
+            window.currentTenderContext = t;
+        }
+
+        // --- GEMINI CHAT FUNCTIONS ---
+        // Expanded model list to try and find a working one
+        const GEMINI_MODELS = [
+            'gemini-1.5-flash',
+            'gemini-1.5-flash-latest',
+            'gemini-1.5-pro',
+            'gemini-1.5-pro-latest',
+            'gemini-pro',
+            'gemini-1.0-pro',
+            'gemini-pro-latest'
+        ];
+
+        function handleGeminiEnter(e) {
+            if (e.key === 'Enter') sendMessageToGemini();
+        }
+
+        async function callGeminiAPI(apiKey, payload) {
+            let lastError = null;
+            for (const model of GEMINI_MODELS) {
+                try {
+                    console.log(`Trying Gemini model: ${model}`);
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const data = await response.json();
+
+                    if (data.error) {
+                        // SPECIFIC ERROR HANDLING
+
+                        // 1. Model Not Found / Unsupported -> Try Next
+                        if (data.error.message.includes('not found') || data.error.message.includes('not supported')) {
+                            console.warn(`Model ${model} failed: ${data.error.message}`);
+                            lastError = data.error.message;
+                            continue; // Valid fallback trigger
+                        }
+
+                        // 2. Quota Exceeded -> Stop and Tell User
+                        if (data.error.code === 429 || data.error.message.includes('Quota exceeded')) {
+                            return {
+                                error: {
+                                    message: "<b>Quota Exceeded:</b> Your API key has used up its free limit for now. Please wait or use a different key."
+                                }
+                            };
+                        }
+
+                        // 3. API Key Invalid -> Stop and Tell User
+                        if (data.error.status === 'INVALID_ARGUMENT' && data.error.message.includes('API key')) {
+                            return {
+                                error: {
+                                    message: "<b>Invalid Key:</b> It looks like your API key is incorrect. Please check your Profile settings."
+                                }
+                            };
+                        }
+
+                        // Other errors -> Return them (might be a one-off issue)
+                        return { error: data.error };
+                    }
+
+                    return data; // Success
+                } catch (err) {
+                    console.error(`Network error with ${model}:`, err);
+                    lastError = "Network connection failed";
+                }
+            }
+            return { error: { message: `Unable to connect. Last error: ${lastError}` } };
+        }
+
+        async function sendMessageToGemini() {
+            const input = document.getElementById('gemini-input');
+            const message = input.value.trim();
+            if (!message) return;
+
+            const apiKey = localStorage.getItem('geminiApiKey');
+            if (!apiKey) {
+                alert('Please set your Gemini API Key in your Profile first.');
+                return;
+            }
+
+            // User Message
+            addChatMessage('user', message);
+            input.value = '';
+            input.disabled = true;
+
+            // Loading state
+            const loadingId = addChatMessage('bot', '<span class="loading loading-dots loading-xs"></span> Thinking...');
+
+            try {
+                // Prepare optimal prompt
+                const t = window.currentTenderContext;
+                const context = `
+                    You are an expert procurement assistant. Answer the user based on this Tender:
+                    Title: ${t.title}
+                    Ministry: ${t.ministry}
+                    Entity: ${t.detailed_procuringEntity || t.procuringEntity || 'N/A'}
+                    Budget: ${t.detailed_budgetType || 'N/A'}
+                    Closing Date: ${t.detailed_closingDate || 'N/A'}
+                    Full Details: ${JSON.stringify(t)}
+                    
+                    Keep answers concise and professional. Use Markdown for formatting.
+                `;
+
+                const payload = {
+                    contents: [{
+                        parts: [
+                            { text: context },
+                            { text: `User Question: ${message}` }
+                        ]
+                    }]
+                };
+
+                const data = await callGeminiAPI(apiKey, payload);
+
+                // Remove loading
+                document.getElementById(loadingId).remove();
+
+                if (data.error) {
+                    addChatMessage('bot', 'Error: ' + data.error.message, true);
+                } else {
+                    const reply = data.candidates[0].content.parts[0].text;
+                    addChatMessage('bot', reply);
+                }
+
+            } catch (err) {
+                if (document.getElementById(loadingId)) document.getElementById(loadingId).remove();
+                addChatMessage('bot', 'Error: Unexpected system error.', true);
+                console.error(err);
+            } finally {
+                input.disabled = false;
+                input.focus();
+            }
+        }
+
+        function addChatMessage(role, text, isError = false) {
+            const box = document.getElementById('gemini-chat-box');
+            const id = 'msg-' + Date.now();
+            const align = role === 'user' ? 'chat-end' : 'chat-start';
+            const color = role === 'user' ? 'chat-bubble-neutral' : (isError ? 'chat-bubble-error' : 'chat-bubble-primary');
+
+            // Markdown rendering
+            const content = role === 'user' ? text : marked.parse(text);
+
+            box.innerHTML += `
+                <div class="chat ${align}" id="${id}">
+                    <div class="chat-bubble ${color} text-xs shadow-md prose prose-invert max-w-none">
+                        ${content}
+                    </div>
+                </div>
+            `;
+            box.scrollTop = box.scrollHeight;
+            return id;
+        }
+
+        function clearGeminiChat() {
+            const box = document.getElementById('gemini-chat-box');
+            box.innerHTML = `
+                <div class="chat chat-start">
+                    <div class="chat-bubble chat-bubble-primary text-xs shadow-md">Hi! Ask me anything about this tender.</div>
+                </div>
+            `;
+        }
+
+        function downloadTenderPDF() {
+            const originalElement = document.getElementById('modal-content');
+
+            // 1. CLONE: Create a deep copy to manipulate without affecting the UI
+            const element = originalElement.cloneNode(true);
+
+            // 2. CLEANUP: Remove unwanted elements from the clone
+            // Remove buttons (Download, Close, Share, Like, Pin, Comment Post)
+            const buttons = element.querySelectorAll('button, .btn, .modal-action, .close-btn');
+            buttons.forEach(btn => btn.remove());
+
+            // Remove input fields (Comment input)
+            const inputs = element.querySelectorAll('input, textarea');
+            inputs.forEach(input => input.remove());
+
+            // Remove divider "Discussion" if needed or all dividers
+            // Let's remove the "Discussion" divider text specifically
+            const dividers = element.querySelectorAll('.divider');
+            dividers.forEach(div => {
+                if (div.innerText.trim() === 'Discussion') div.remove();
+            });
+
+            // Remove the comments container (the bg-base-200 block)
+            // It lacks a specific ID, so we find the "Comments" header and remove its parent
+            const headers = element.querySelectorAll('h4');
+            headers.forEach(h4 => {
+                if (h4.innerText.trim() === 'Comments') {
+                    if (h4.parentElement) h4.parentElement.remove();
+                }
+            });
+
+            // Remove scrollbars logic from comments list (make it auto height for PDF)
+            // (Note: this might be redundant if we removed the parent above, but safe to keep if parent removal fails or logic changes)
+            const commentsList = element.querySelector('#comments-list');
+            if (commentsList) {
+                commentsList.classList.remove('max-h-60', 'overflow-y-auto');
+                commentsList.classList.add('h-auto');
+            }
+
+            // Fix text colors for print (ensure black)
+            element.classList.add('text-black');
+            element.querySelectorAll('*').forEach(el => el.classList.remove('text-gray-400', 'text-gray-500', 'opacity-50'));
+
+
+            const titleEl = document.querySelector('.sticky h3');
+            const title = titleEl ? titleEl.innerText.replace(/\s+/g, '_') : 'Tender_Details';
+
+            // Visual feedback
+            const btn = document.querySelector('button[title="Download PDF"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="loading loading-spinner loading-xs"></span> Generating...';
+            btn.disabled = true;
+
+            const opt = {
+                margin: [10, 10, 10, 10],
+                filename: `${title}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, logging: true, scrollY: 0 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+            };
+
+            html2pdf().set(opt).from(element).save()
+                .then(() => {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                })
+                .catch(err => {
+                    console.error('PDF Generation Error:', err);
+                    alert('PDF Download Failed. Check console for details.\n' + err.message);
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                });
+        }
+
+        async function loadComments(tenderId) {
+            const list = document.getElementById('comments-list');
+            try {
+                const res = await fetch(`/api/tenders/${tenderId}/comments`);
+                const comments = await res.json();
+
+                if (comments.length === 0) {
+                    list.innerHTML = `<div class="text-center text-xs text-gray-400 py-2">No comments yet. Be the first!</div>`;
+                    return;
+                }
+
+                list.innerHTML = comments.map(c => `
+                    <div class="flex gap-3">
+                        <div class="avatar placeholder">
+                            <div class="bg-neutral text-neutral-content rounded-full w-8 h-8">
+                                <span class="text-xs">${c.user.name.charAt(0)}</span>
+                            </div>
+                        </div>
+                        <div class="flex-1 bg-base-100 p-2 rounded-lg text-sm shadow-sm">
+                            <div class="font-bold text-xs text-gray-600">${c.user.name} <span class="font-normal text-gray-400 ml-2">${new Date(c.createdAt).toLocaleDateString()}</span></div>
+                            <p class="text-gray-800 mt-1">${c.text}</p>
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (e) {
+                list.innerHTML = `<div class="text-error text-xs">Failed to load comments</div>`;
+            }
+        }
+
+        async function postComment(tenderId) {
+            const input = document.getElementById('comment-input');
+            const text = input.value.trim();
+            if (!text) return;
+
+            try {
+                const res = await fetch(`/api/tenders/${tenderId}/comments`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    },
+                    body: JSON.stringify({ text })
+                });
+
+                if (res.ok) {
+                    input.value = '';
+                    loadComments(tenderId); // Reload
+                } else {
+                    alert('Failed to post');
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        // Share Function
+        window.shareTender = function (id) {
+            const url = `${window.location.origin}${window.location.pathname}?id=${id}`;
+            // Use Clipboard API
+            navigator.clipboard.writeText(url).then(() => {
+                const btn = document.getElementById('share-btn');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = `<span class="text-success">Copied!</span>`;
+                setTimeout(() => btn.innerHTML = originalText, 2000);
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+                prompt('Copy this link:', url);
+            });
+        };
+
+        // Check for deep link on load (after data fetch)
+        const originalRender = window.renderTable;
+        window.renderTable = function () {
+            originalRender();
+
+            // Check URL param only once after first render
+            if (!window.hasCheckedDeepLink && filteredTenders.length > 0) {
+                window.hasCheckedDeepLink = true;
+                const urlParams = new URLSearchParams(window.location.search);
+                const sharedId = urlParams.get('id');
+                if (sharedId) {
+                    const tender = allTenders.find(t => (t.tenderId === sharedId || t.reference.startsWith(sharedId)));
+                    if (tender) {
+                        openModal(tender);
+                    }
+                }
+            }
+        };
+    </script>
+</body>
+
+</html>
