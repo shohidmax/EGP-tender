@@ -46,17 +46,20 @@ const Tender = require('./models/Tender');
                     const cells = Array.from(row.querySelectorAll('td, th'));
 
                     if (cells.length === 2) {
+                        const cleanVal = (text) => text.trim().replace(/^:\s*/, '');
                         const key = cleanKey(cells[0].innerText);
-                        const val = cells[1].innerText.trim();
+                        const val = cleanVal(cells[1].innerText);
                         if (key && val) data['dtl_' + key] = val;
                     }
                     else if (cells.length === 4) {
+                        const cleanVal = (text) => text.trim().replace(/^:\s*/, '');
+
                         const k1 = cleanKey(cells[0].innerText);
-                        const v1 = cells[1].innerText.trim();
+                        const v1 = cleanVal(cells[1].innerText);
                         if (k1 && v1) data['dtl_' + k1] = v1;
 
                         const k2 = cleanKey(cells[2].innerText);
-                        const v2 = cells[3].innerText.trim();
+                        const v2 = cleanVal(cells[3].innerText);
                         if (k2 && v2) data['dtl_' + k2] = v2;
                     }
                 });

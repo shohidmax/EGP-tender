@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  server:
+    build: 
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: egp-server
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - MONGO_URI=${MONGO_URI:-mongodb://mongo:27017/eprocure}
+    # depends_on:
+    #   - mongo
+
+  client:
+    build: 
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: egp-client
+    restart: always
+    ports:
+      - "3001:3000"
+    environment:
+      - SERVER_URL=http://server:3000
+    depends_on:
+      - server
+
+  # mongo:
+  #   image: mongo:latest
+  #   container_name: egp-mongo
+  #   restart: always
+  #   ports:
+  #     - "27017:27017"
+  #   volumes:
+  #     - mongo-data:/data/db
+
+# volumes:
+#   mongo-data:
