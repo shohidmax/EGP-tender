@@ -23,6 +23,27 @@ mongoose.connect(process.env.MONGODB_URI)
     .then(() => console.log('Connected to MongoDB Atlas'))
     .catch(err => console.error('MongoDB connection error:', err));
 
+// Status Route
+app.get('/status', (req, res) => {
+    const dbStatus = {
+        0: 'Disconnected',
+        1: 'Connected',
+        2: 'Connecting',
+        3: 'Disconnecting',
+        99: 'Uninitialized',
+    };
+
+    res.json({
+        server: 'Running',
+        message: 'Server is healthy and running',
+        uptime: process.uptime(),
+        timestamp: new Date().toISOString(),
+        mongoConnection: dbStatus[mongoose.connection.readyState] || 'Unknown',
+        memoryUsage: process.memoryUsage(),
+        environment: process.env.NODE_ENV || 'development'
+    });
+});
+
 // Routes
 const authRoutes = require('./routes/auth');
 const tenderRoutes = require('./routes/tenders');
